@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="s2jsf" default="dist" basedir=".">
+
+	<property name="ver" value="0.0.1"/>
+
+	<target name="dist">
+		<mkdir dir="target"/>
+		<zip zipfile="target/s2-silverlight-${ver}.zip">
+			<zipfileset prefix="s2silverlight" dir=".">
+				<exclude name="**/build/**"/>
+				<exclude name="**/target/**"/>
+				<exclude name="**/.settings/**"/>
+			</zipfileset>
+			<zipfileset prefix="s2silverlight" dir="target">
+				<include name="s2-silverlight-${ver}.jar"/>
+				<include name="s2-silverlight-${ver}-sources.jar"/>
+			</zipfileset>
+		</zip>
+	</target>
+
+</project>
