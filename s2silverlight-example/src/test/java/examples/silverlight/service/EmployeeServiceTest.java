@@ -16,6 +16,12 @@ public class EmployeeServiceTest extends S2TestCase
 		assertEquals(14, empList.size());
 	}
 
+	public void testFind()
+	{
+		Emp emp = service.find(7839);
+		assertEquals("KING", emp.ename);
+	}
+
 	@Override
 	protected void setUp() throws Exception
 	{

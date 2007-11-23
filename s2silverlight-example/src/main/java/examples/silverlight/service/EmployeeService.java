@@ -15,9 +15,9 @@ public class EmployeeService
 		return jdbcManager.from(Emp.class).getResultList();
 	}
 
-	public List<Emp> find(int empno)
+	public Emp find(int empno)
 	{
-		return jdbcManager.from(Emp.class).where("emp.empno = ?", empno)
-				.getResultList();
+		return jdbcManager.from(Emp.class).where("empno = ?", empno)
+				.getSingleResult();
 	}
 }
