@@ -1,7 +1,5 @@
 package examples.silverlight.service;
 
-import java.util.List;
-
 import org.seasar.extension.jdbc.JdbcManager;
 
 import examples.silverlight.entity.Emp;
@@ -10,9 +8,9 @@ public class EmployeeService
 {
 	public JdbcManager jdbcManager;
 
-	public List<Emp> findAll()
+	public Emp[] findAll()
 	{
-		return jdbcManager.from(Emp.class).getResultList();
+		return jdbcManager.from(Emp.class).getResultList().toArray(new Emp[0]);
 	}
 
 	public Emp find(int empno)
