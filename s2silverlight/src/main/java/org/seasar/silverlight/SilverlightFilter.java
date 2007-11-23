@@ -96,31 +96,7 @@ public class SilverlightFilter implements Filter
 		}
 		Method method = methods[0];
 
-		// 引数一覧の取得
-		ParamReader reader = new ParamReader(obj.getClass());
-		String[] paramNames = reader.getParameterNames(method);
-		Class[] paramTypes = method.getParameterTypes();
-
-		// 引数の作成
-		String requestValue = getBody(request.getReader());
-		JSONObject input = JSONObject.fromObject(requestValue);
-		input = (JSONObject) input.values().iterator().next();
-
-		Object[] args = new Object[paramNames.length];
-		for (int index = 0; index < paramNames.length; index++)
-		{
-			Object param = input.get(paramNames[index]);
-
-			if (param instanceof JSONObject)
-			{
-				args[index] = JSONObject.toBean(input
-						.getJSONObject(paramNames[index]), paramTypes[index]);
-			}
-			else
-			{
-				args[index] = param;
-			}
-		}
+		Object[] args = createArgs(request, obj.getClass(), method);
 
 		Object target = null;
 		try
@@ -144,6 +120,42 @@ public class SilverlightFilter implements Filter
 		PrintWriter pw = response.getWriter();
 		pw.write(result);
 		pw.close();
+	}
+
+	protected Object[] createArgs(HttpServletRequest request, Class clazz,
+			Method method) throws IOException
+	{
+		// 引数一覧の取得
+		ParamReader reader = new ParamReader(clazz);
+		String[] paramNames = reader.getParameterNames(method);
+		Class[] paramTypes = method.getParameterTypes();
+
+		if (paramNames == null || paramNames.length == 0)
+		{
+			return null;
+		}
+
+		// 引数の作成
+		String requestValue = getBody(request.getReader());
+		JSONObject input = JSONObject.fromObject(requestValue);
+		input = (JSONObject) input.values().iterator().next();
+
+		Object[] args = new Object[paramNames.length];
+		for (int index = 0; index < paramNames.length; index++)
+		{
+			Object param = input.get(paramNames[index]);
+
+			if (param instanceof JSONObject)
+			{
+				args[index] = JSONObject.toBean(input
+						.getJSONObject(paramNames[index]), paramTypes[index]);
+			}
+			else
+			{
+				args[index] = param;
+			}
+		}
+		return args;
 	}
 
 	public void destroy()
