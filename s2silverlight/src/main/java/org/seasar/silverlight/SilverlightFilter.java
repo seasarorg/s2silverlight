@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.Filter;
@@ -16,6 +17,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.arnx.jsonic.JSON;
+import net.arnx.jsonic.JSONParseException;
 import net.sf.json.JSONObject;
 
 import org.apache.ws.java2wsdl.bytecode.ParamReader;
@@ -116,10 +119,7 @@ public class SilverlightFilter implements Filter
 
 		response.setHeader("Cache-Control", "no-cache");
 		response.setHeader("Pragma", "no-cache");
-
-		PrintWriter pw = response.getWriter();
-		pw.write(result);
-		pw.close();
+		response.getOutputStream().write(result.getBytes());
 	}
 
 	protected Object[] createArgs(HttpServletRequest request, Class clazz,
@@ -128,7 +128,7 @@ public class SilverlightFilter implements Filter
 		// 引数一覧の取得
 		ParamReader reader = new ParamReader(clazz);
 		String[] paramNames = reader.getParameterNames(method);
-		Class[] paramTypes = method.getParameterTypes();
+//		Class[] paramTypes = method.getParameterTypes();
 
 		if (paramNames == null || paramNames.length == 0)
 		{
@@ -137,18 +137,27 @@ public class SilverlightFilter implements Filter
 
 		// 引数の作成
 		String requestValue = getBody(request.getReader());
-		JSONObject input = JSONObject.fromObject(requestValue);
-		input = (JSONObject) input.values().iterator().next();
+
+		Map requstValues = null;
+		try
+		{
+			requstValues = (Map) JSON.decode(requestValue);
+		}
+		catch (JSONParseException e)
+		{
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
 
 		Object[] args = new Object[paramNames.length];
 		for (int index = 0; index < paramNames.length; index++)
 		{
-			Object param = input.get(paramNames[index]);
+			Object param = requstValues.get(paramNames[index]);
 
 			if (param instanceof JSONObject)
 			{
-				args[index] = JSONObject.toBean(input
-						.getJSONObject(paramNames[index]), paramTypes[index]);
+//				args[index] = JSONObject.toBean(input
+//						.getJSONObject(paramNames[index]), paramTypes[index]);
 			}
 			else
 			{
