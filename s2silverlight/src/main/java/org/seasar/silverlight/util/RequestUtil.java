@@ -7,6 +7,13 @@ import javax.servlet.http.HttpServletRequest;
 
 public class RequestUtil
 {
+	/**
+	 * リクエストボディを取得します。
+	 * 
+	 * @param request 処理するリクエスト
+	 * @return リクエストボディ
+	 * @throws IOException
+	 */
 	public static String getBody(HttpServletRequest request) throws IOException
 	{
 		BufferedReader reader = request.getReader();

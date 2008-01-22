@@ -22,7 +22,7 @@ import org.seasar.framework.beans.BeanDesc;
 import org.seasar.framework.beans.factory.BeanDescFactory;
 import org.seasar.framework.container.SingletonS2Container;
 import org.seasar.framework.util.JSONSerializer;
-import org.seasar.silverlight.MessageUtil;
+import org.seasar.silverlight.exception.InternalRuntimeException;
 import org.seasar.silverlight.util.RequestUtil;
 
 public class S2Connector implements Connector
@@ -36,25 +36,13 @@ public class S2Connector implements Connector
 		String[] pathElems = StringUtils.split(servicePath, "/");
 		if (pathElems.length != 2)
 		{
-			String message = MessageUtil.getMessage(ILLEGAL_URL, servicePath);
-			throw new ServletException(message);
+			throw new InternalRuntimeException(ILLEGAL_URL, servicePath);
 		}
 
 		String componentName = pathElems[0];
 		String methodName = pathElems[1];
 
-		Object obj;
-		try
-		{
-			obj = getComponent(componentName);
-		}
-		catch (RuntimeException ex)
-		{
-			throw new ServletException(ex);
-		}
-
-		// SeasarはRuntimeExceptionで統一しているので、
-		// この周辺実装はそれに合わせるべき。
+		Object obj = getComponent(componentName);
 
 		BeanDesc beanDesc = BeanDescFactory.getBeanDesc(obj.getClass());
 		Method[] methods = beanDesc.getMethods(methodName);
@@ -62,17 +50,7 @@ public class S2Connector implements Connector
 		String requestValue = RequestUtil.getBody(request);
 		Object[] args = createArgs(requestValue, obj.getClass(), methods);
 
-		Object target = null;
-		try
-		{
-			target = beanDesc.invoke(obj, methodName, args);
-		}
-		catch (Exception e)
-		{
-			throw new ServletException(
-					"An error occurred while invoking method. "
-							+ e.getMessage(), e);
-		}
+		Object target = beanDesc.invoke(obj, methodName, args);
 
 		Map<String, Object> returnValue = new HashMap<String, Object>();
 		returnValue.put("return", target);
@@ -91,16 +69,14 @@ public class S2Connector implements Connector
 		{
 			jsonObj = JSON.decode(body);
 		}
-		catch (JSONParseException e)
+		catch (JSONParseException ex)
 		{
-			// TODO: Exception
-			throw new IOException();
+			throw new InternalRuntimeException(ex);
 		}
 
 		if (jsonObj instanceof Map == false)
 		{
-			// TODO: Exception
-			throw new IOException();
+			throw new InternalRuntimeException();
 		}
 
 		Map<?, ?> requestMap = (Map<?, ?>) jsonObj;
@@ -115,8 +91,7 @@ public class S2Connector implements Connector
 			}
 		}
 
-		// TODO: Exception
-		throw new IOException();
+		throw new InternalRuntimeException();
 	}
 
 	protected Object[] doCreateArgs(Map<?, ?> requestMap, Class<?> clazz,
